@@ -1,0 +1,30 @@
+# Ignore node_modules
+node_modules/
+
+# Ignore next.js build output
+.next/
+out/
+
+# Ignore dotenv environment variables file
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Ignore logs
+logs
+*.log
+npm-debug.log*
+
+# Ignore any operating system files
+.DS_Store
+Thumbs.db
+
+# Ignore editor specific files
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
