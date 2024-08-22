@@ -2,7 +2,7 @@ const admin = require('firebase-admin');
 const fs = require('fs');
 
 // Initialize Firebase Admin SDK
-const serviceAccount = require('./path-to-your-service-account-key.json');
+const serviceAccount = require('../config/firebase-service-account-key.json');
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount)
 });
@@ -10,28 +10,43 @@ admin.initializeApp({
 const db = admin.firestore();
 
 // Read the JSON file
-const membersData = JSON.parse(fs.readFileSync('./path-to-your-members.json', 'utf8'));
+const membersData = JSON.parse(fs.readFileSync('./data/members-database.json', 'utf8'));
 
-// Function to upload a single member
-async function uploadMember(member) {
+// Function to upload members in batches
+async function uploadMembers() {
   try {
-    await db.collection('members').doc(member.slug).set(member);
-    console.log(`Successfully uploaded member: ${member.name}`);
-  } catch (error) {
-    console.error(`Error uploading member ${member.name}:`, error);
-  }
-}
+    const members = membersData.members;
+    const batch = db.batch();
+    let count = 0;
 
-// Function to upload all members
-async function uploadAllMembers() {
-  for (const member of membersData.members) {
-    await uploadMember(member);
+    for (const [slug, memberData] of Object.entries(members)) {
+      const docRef = db.collection('members').doc(slug);
+      batch.set(docRef, memberData);
+      count++;
+
+      // Firestore batches can only contain up to 500 operations
+      if (count === 500) {
+        await batch.commit();
+        console.log('Batch of 500 members committed.');
+        count = 0;
+      }
+    }
+
+    // Commit any remaining members
+    if (count > 0) {
+      await batch.commit();
+      console.log(`Final batch of ${count} members committed.`);
+    }
+
+    console.log('All members uploaded successfully');
+  } catch (error) {
+    console.error('Error uploading members:', error);
   }
-  console.log('Finished uploading all members');
 }
 
 // Run the upload
-uploadAllMembers().then(() => {
+uploadMembers().then(() => {
+  console.log('Upload process completed.');
   process.exit(0);
 }).catch((error) => {
   console.error('Error:', error);
