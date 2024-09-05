@@ -15,6 +15,8 @@ export default {
       backgroundImage: {
         'founders': "url('/founders.jpg')",
         'members': "url('/members_background.png')",
+        'resources': "url('/resources.png')",
+        'recruitment': "url('/recruitment.jpg')",
       },
       // ... other theme extensions
     },

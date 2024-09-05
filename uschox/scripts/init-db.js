@@ -3,6 +3,19 @@ import fs from 'fs/promises';
 import path from 'path';
 
 async function initDb() {
+  // Drop existing table if it exists
+  const dropTable = `DROP TABLE IF EXISTS members`;
+
+  if (process.env.VERCEL) {
+    await db.query(dropTable);
+  } else {
+    await new Promise((resolve, reject) => {
+      db.run(dropTable, (err) => {
+        if (err) reject(err);
+        else resolve();
+      });
+    });
+  }
   const createTable = `
     CREATE TABLE IF NOT EXISTS members (
       id INTEGER PRIMARY KEY ${process.env.VERCEL ? 'GENERATED ALWAYS AS IDENTITY' : 'AUTOINCREMENT'},
